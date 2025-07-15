@@ -1,0 +1,52 @@
+services:
+  flaskiq_web:
+    container_name: flaskiq_web
+    image: bijoaja/flaskiq:latest
+    ports:
+      - "${FLASK_RUN_PORT:-8080}:8080"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - flaskiq_db
+      - flaskiq_ai
+    networks:
+      - app-network
+
+  flaskiq_db:
+    image: mysql:8.4
+    container_name: flaskiq_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: template_db
+      MYSQL_ROOT_PASSWORD: root123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  flaskiq_ai:
+    image: ollama/ollama:latest
+    container_name: flaskiq_ai
+    ports:  
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    tty: true
+    stdin_open: true
+    networks:
+      - app-network
+    entrypoint: ["/bin/bash", "-c"]
+    command: >
+      "ollama serve & sleep 5 && ollama pull mistral && wait"
+
+volumes:
+  mysql_data: {}
+  ollama_models: {}
+
+networks:
+  app-network:
+    driver: bridge
