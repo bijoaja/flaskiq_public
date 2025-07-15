@@ -4,13 +4,10 @@ services:
     image: bijoaja/flaskiq:latest
     ports:
       - "${FLASK_RUN_PORT:-8080}:8080"
-    volumes:
-      - .:/app
     env_file:
       - .env
     depends_on:
       - flaskiq_db
-      - flaskiq_ai
     networks:
       - app-network
 
